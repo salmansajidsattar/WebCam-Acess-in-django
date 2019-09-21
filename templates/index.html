@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    {% load static %}
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>djangoWebcamAcess</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'glyphicon.css' %}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{%static 'style.css'%}" rel="stylesheet">
+
+      <!-- Icon bar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+  </head>
+
+   <body>
+
+       <!-- Page Content -->
+    <div class="container" align="center">
+    <!-- Grid System -->
+      <div class="row">
+
+        <!-- Images used to open the lightbox -->
+        <div class="col-lg-6 col-md-6">
+            <img id="img" src="{% url 'VidFeed' %}"  height="450" width="900" onclick="openModal();currentSlide(1)" class="hover-shadow">
+          </div>
+         <!-- The Modal/Lightbox -->
+<div id="myModal" class="modal">
+  <span class="close cursor" onclick="closeModal()">&times;</span>
+  <div class="modal-content">
+
+    <div class="mySlides">
+      <div class="numbertext">1 / 4</div>
+      <img src="{% url 'VidFeed' %}"  style="width:100%">
+    </div>
+    <!-- Next/previous controls -->
+    <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+    <a class="next" onclick="plusSlides(1)">&#10095;</a>
+
+    <!-- Caption text -->
+    <div class="caption-container">
+      <p id="caption"></p>
+    </div>
+
+    <!-- Thumbnail image controls -->
+    <div class="row">
+    <div class="column">
+      <img class="demo" src="{% url 'VidFeed' %}" height="300" width="300" onclick="currentSlide(1)">
+    </div>
+
+    </div>
+  </div>
+</div>
+        <!--modal image end -->
+      </div> <!-- row1 ends-->
+    </div> <!--Page content container ends-->
+
+
+    <div style="height:50px"></div>
+    <!-- Footer -->
+    <footer class="py-5 bg-dark">
+      <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; www.salmansajidsatar.com 2019</p>
+      </div>
+    </footer>
+
+
+    <!-- Bootstrap core JavaScript -->
+    <script src="{% static 'jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'modal_image.js' %}"></script>
+    <!--Off JavaScript -->
+
+     <script src="{% static 'playlist.js' %}"></script>
+    <script src=src="{%  static 'notification.js' %}"></script>
+<script src="https://js.pusher.com/4.1/pusher.min.js"></script>
+
+  <script>
+    const pusher = new Pusher('b49f6f0b6ccf64ce2cb0', {
+      cluster: 'ap2', // gotten from Pusher app dashboard
+      encrypted: true // optional
+    });
+
+    const channel = pusher.subscribe('blog');
+
+    channel.bind('post-added', data => {
+      appendToList(data);
+    });
+
+    channel.bind('post-deleted', data => {
+      const post = document.querySelector(`#${data.id}`);
+      post.parentNode.removeChild(post);
+    });
+
+    channel.bind('post-deactivated', data => {
+      const post = document.querySelector(`#${data.id}`);
+      post.classList.add('deactivated');
+    });
+
+    const form = document.querySelector('#post-form');
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      fetch("/post", {
+        method: 'POST',
+        body: new FormData(form)
+      })
+      .then(r => {
+        form.reset();
+      });
+    }
+
+    function deletePost(id) {
+      fetch(`/post/${id}`, {
+        method: 'DELETE'
+      });
+    }
+
+    function deactivatePost(id) {
+      fetch(`/post/${id}`, {
+        method: 'PUT'
+      });
+    }
+
+    function appendToList(data) {
+        const html = `
+          <div class="card" id="${data.id}">
+            <header class="card-header">
+              <p class="card-header-title">${data.title}</p>
+            </header>
+            <div class="card-content">
+              <div class="content">
+                <p>${data.content}</p>
+              </div>
+            </div>
+            <footer class="card-footer">
+              <a href="#" onclick="deactivatePost('${data.id}')" class="card-footer-item">Deactivate</a>
+              <a href="#" onclick="deletePost('${data.id}')" class="card-footer-item">Delete</a>
+            </footer>
+          </div>`;
+        let list = document.querySelector("#post-list")
+        list.innerHTML += html;
+    };
+
+  </script>
+
+
+  </body>
+
+</html>
